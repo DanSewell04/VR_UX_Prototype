@@ -5,32 +5,50 @@ using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 
 public class SnapTurningManager : MonoBehaviour
 {
-    [Header("Snap Turn Settings")]
+    // Reference to turning providers
+    public ContinuousTurnProvider continuousTurnProvider;
     public SnapTurnProvider snapTurnProvider;
 
-    [Header("UI Elements")]
-    public Toggle snapTurnToggle;
+    // UI Buttons
+    public Button continuousTurnButton;
+    public Button snapTurnButton;
 
-    void Start()
+    // Colors for active/inactive button states
+    public Color activeColor = Color.green;
+    public Color inactiveColor = Color.white;
+
+    // To track current turning mode
+    private bool isContinuousTurnMode = false;
+
+    // Toggle between continuous and snap turning
+    public void ToggleContinuousTurnMode(bool isActive)
     {
-        if (snapTurnProvider == null)
-        {
-            Debug.LogWarning("SnapTurnProvider is not assigned!");
-            return;
-        }
-
-        if (snapTurnToggle != null)
-        {
-            snapTurnToggle.isOn = snapTurnProvider.enabled;
-            snapTurnToggle.onValueChanged.AddListener(SetSnapTurn);
-        }
+        isContinuousTurnMode = isActive;
+        UpdateTurningMode(isContinuousTurnMode);
     }
 
-    public void SetSnapTurn(bool isOn)
+    // Updates the turning mode based on the flag
+    private void UpdateTurningMode(bool isContinuous)
     {
-        if (snapTurnProvider != null)
+        if (isContinuous)
         {
-            snapTurnProvider.enabled = isOn;
+            // Enable continuous turning and disable snap turning
+            continuousTurnProvider.enabled = true;
+            snapTurnProvider.enabled = false;
+
+            // Update button colors
+            continuousTurnButton.image.color = activeColor;
+            snapTurnButton.image.color = inactiveColor;
+        }
+        else
+        {
+            // Enable snap turning and disable continuous turning
+            continuousTurnProvider.enabled = false;
+            snapTurnProvider.enabled = true;
+
+            // Update button colors
+            snapTurnButton.image.color = activeColor;
+            continuousTurnButton.image.color = inactiveColor;
         }
     }
 }
