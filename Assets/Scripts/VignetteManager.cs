@@ -1,63 +1,46 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-
 public class VignetteManager : MonoBehaviour
 {
-    [Header("Post-Processing")]
-    public Volume postProcessingVolume;
-    public float movementThreshold = 0.1f;
+    [Header("Vignette Mesh Root")]
+    public GameObject vignetteObject; // Assign the 'TunnelingVignette' GameObject here
 
-    [Header("UI Elements")]
-    public Slider intensitySlider;
-    public Slider smoothnessSlider;
+    [Header("UI Controls")]
     public Toggle vignetteToggle;
-    public GameObject vignetteSettingsPanel;
+    public Slider intensitySlider;
 
-    private Vignette vignette;
+    [Header("Scaling Settings")]
+    public Vector3 minScale = Vector3.zero;       // No vignette
+    public Vector3 maxScale = new Vector3(1, 1, 1); // Full screen effect
 
     void Start()
     {
-        if (postProcessingVolume.profile.TryGet(out vignette))
+        if (vignetteToggle != null)
         {
-            // Initialize sliders and toggle
-            intensitySlider.value = vignette.intensity.value;
-            smoothnessSlider.value = vignette.smoothness.value;
-            vignetteToggle.isOn = vignette.active;
-
-            // Hook up UI events
-            vignetteToggle.onValueChanged.AddListener(ToggleVignette);
-            intensitySlider.onValueChanged.AddListener(UpdateIntensity);
-            smoothnessSlider.onValueChanged.AddListener(UpdateSmoothness);
-
-            // Show/hide settings panel
-            vignetteSettingsPanel.SetActive(vignette.active);
+            vignetteToggle.onValueChanged.AddListener(SetVignetteActive);
+            vignetteToggle.isOn = vignetteObject.activeSelf;
         }
-        else
+
+        if (intensitySlider != null)
         {
-            Debug.LogWarning("Vignette not found on post-processing volume!");
+            intensitySlider.onValueChanged.AddListener(SetVignetteIntensity);
+            intensitySlider.value = 1f; // Default full intensity
         }
     }
 
-    public void UpdateIntensity(float value)
+    public void SetVignetteActive(bool isActive)
     {
-        if (vignette != null && vignette.active)
-            vignette.intensity.value = value;
-    }
-
-    public void UpdateSmoothness(float value)
-    {
-        if (vignette != null && vignette.active)
-            vignette.smoothness.value = value;
-    }
-
-    public void ToggleVignette(bool isOn)
-    {
-        if (vignette != null)
+        if (vignetteObject != null)
         {
-            vignette.active = isOn;
-            vignetteSettingsPanel.SetActive(isOn);
+            vignetteObject.SetActive(isActive);
+        }
+    }
+
+    public void SetVignetteIntensity(float value)
+    {
+        if (vignetteObject != null)
+        {
+            vignetteObject.transform.localScale = Vector3.Lerp(minScale, maxScale, value);
         }
     }
 }
